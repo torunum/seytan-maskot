@@ -6,12 +6,15 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { createNoticer } = require('./notice');
 
 const PORT = Number(process.env.MASKOT_PORT) || 47620;
 const ROOT = __dirname;
 const ALLOWED_HOSTS = new Set([`127.0.0.1:${PORT}`, `localhost:${PORT}`]);
 
 const clients = new Set();
+const noticer = createNoticer();
+let pendingNotice = null;   // {notice, sid} — yayınlanacak olay bulunamazsa bekler
 let lastEvent = null;
 let eventId = 0;
 
@@ -155,8 +158,20 @@ function broadcast(evt) {
 }
 
 function handleHook(payload) {
+  // Not her olayda beslenir: mapEvent null dönse bile sayaçlar ilerlemeli.
+  const sid = payload.session_id || 'bilinmeyen';
+  const info = toolInfo(payload.tool_name || '', payload.tool_input);
+  const notice = noticer.observe(payload, info);
+  if (notice) pendingNotice = { notice, sid };
+
+  if (payload.hook_event_name === 'SessionEnd') {
+    noticer.forget(sid);
+    if (pendingNotice && pendingNotice.sid === sid) pendingNotice = null;
+  }
+
   const out = mapEvent(payload);
   if (!out) return;
+
   const evt = {
     ...out,
     id: ++eventId,
@@ -164,6 +179,14 @@ function handleHook(payload) {
     project: payload.cwd ? path.basename(payload.cwd) : '',
     busy: busyCount(),
   };
+  // Ateşlenen not, yayınlanacak ilk olaya iliştirilir — ama yalnızca AYNI
+  // oturumun olayına. Paralel oturumlarda aksi halde A'nın notu B'nin
+  // olayına biner ve maskot yanlış projenin adıyla yanlış komutu söyler.
+  if (pendingNotice && pendingNotice.sid === sid) {
+    evt.notice = pendingNotice.notice;
+    pendingNotice = null;
+  }
+
   lastEvent = evt;
   broadcast(evt);
 }

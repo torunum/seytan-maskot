@@ -1,77 +1,43 @@
-# Şeytan Maskot
+# Şeytan maskot
 
-Claude Code çalışırken ekranının köşesinde sana eşlik eden, Türkçe konuşan küçük bir şeytan. Düşünürken çenesini kaşır, terminalde çalışırken dirgenini sallar, izin beklerken ayağını vurur. İş bitince kutlar.
+**Proje sahibi: [torunum](https://github.com/torunum).** Bu dal takılma sezme geliştirmesini içerir; ana sürümden ayrıdır.
 
-**Proje: [torunum](https://github.com/torunum)** · [GitHub deposu](https://github.com/torunum/seytan-maskot)
+Claude Code çalışırken ekranın sol alt köşesinde duran, ne yaptığını söyleyen komik bir şeytan.
+Düşünürken çenesini kaşır, komut çalıştırırken terminale dirgen batırır, izin beklerken ayağını vurur,
+iş bitince alevler içinde zıplar.
 
-![Şeytan Maskot: düşünme, terminal, izin bekleme ve tamamlanma animasyonları](docs/media/seytan-maskot.gif)
+## Gereksinim
 
-*Gerçek tarayıcı demosundan 10 saniyelik kayıt. Durumlar demo paneline tıklanarak gösterilmiştir; canlı bir Claude Code oturumu kaydı değildir.*
+Node.js 22.12 veya üstü ve Claude Code.
 
-## Neler Yapar?
+## Kurulum
 
-- Claude Code'un düşünme, dosya okuma ve düzenleme, arama, terminal, web ve araç durumlarına farklı pozlarla tepki verir.
-- İzin beklediğinde, hata olduğunda ve iş tamamlandığında haber verir.
-- Masaüstünde şeffaf, çerçevesiz bir Electron penceresinde görünür.
-- Tıklanınca tepki verir; art arda dürtülünce sinirlenir. Boşta kalınca uyur.
-- Sürüklenebilir ve masaüstündeki konumunu hatırlar.
+```bash
+cd seytan-maskot
+npm install        # Electron'u indirir
+npm run kur        # hook'ları ~/.claude/settings.json dosyasına ekler (önce yedek alır)
+npm start          # maskotu açar
+```
 
-## Hızlı Deneme
+Sonra Claude Code'da herhangi bir projede çalışmaya başla. Maskot kendiliğinden tepki verir.
+Claude Code içinde `/hooks` yazarak hook'ların eklendiğini görebilirsin.
 
-İndirdiğin veya klonladığın proje klasöründe:
+## Kullanım
+
+Maskotun üstüne tıklarsan dürtersin. Üst üste dürtersen sinirlenir.
+Sürükleyerek yerini değiştirebilirsin, konumu hatırlanır.
+Sağ tıkla açılan menüden test gösterisini oynatabilir, sol alt köşeye geri koyabilir ya da kapatabilirsin.
+Boş kalınca bir süre sonra uyur, dürtünce uyanır.
+
+## Electron kurmadan hızlıca denemek
 
 ```bash
 node server.js
 ```
 
-Tarayıcıda [demo panelini aç](http://127.0.0.1:47620/?demo). Bu deneme için Electron kurulumu veya Claude Code bağlantısı gerekmez. Paneldeki düğmelerle durumları deneyebilirsin.
-
-Tarayıcı sürümü sayfanın içinde çalışır. Diğer uygulamaların üzerinde duran masaüstü maskotu için aşağıdaki kurulumu kullan.
-
-## Masaüstü Kurulumu
-
-**Gereksinimler:** Node.js **22.12 veya üzeri**, npm ve Claude Code. Depodaki Electron sürümü Node.js 22.12+ gerektirir.
-
-Proje klasöründe:
-
-```bash
-npm install
-npm run kur
-npm start
-```
-
-`npm run kur`, maskot hook'larını Claude Code kullanıcı ayarlarına ekler. Mevcut ayar dosyası varsa önce yedek alır. Bu bağlantı kullanıcı düzeyinde kurulur ve farklı projelerdeki Claude Code oturumları için de geçerlidir. Ayar klasörü varsayılan olarak `~/.claude` yoludur; `CLAUDE_CONFIG_DIR` tanımlıysa o klasör kullanılır.
-
-Claude Code içinde `/hooks` ile kayıtları kontrol edebilirsin. Ardından herhangi bir projede çalışmaya başladığında maskot olaylara tepki verir.
-
-## Kullanım
-
-| Etkileşim | Sonuç |
-| --- | --- |
-| Maskota tıkla | Dürt ve tepkisini gör. |
-| Sürükle | Masaüstündeki yerini değiştir. |
-| Sağ tıkla | Test gösterisini oynat, sol alt köşeye geri koy veya kapat. |
-| Bir süre boş bırak | Uykuya dalmasını izle; tıklayarak uyandır. |
-
-### Terminalde Çalışırken
-
-![Komut durumunda maskot ve mevcut tarayıcı demo paneli](docs/media/01-command.png)
-
-### İş Tamamlandığında
-
-![Tamamlanma durumunda kutlayan maskot](docs/media/02-complete.png)
-
-## Nasıl Çalışır?
-
-```text
-Claude Code -> hook.js -> yerel HTTP sunucusu -> SSE -> mascot.html
-```
-
-`hook.js`, Claude Code olaylarından gerekli alanları seçip yerel sunucuya gönderir. `server.js` bunları maskot durumlarına çevirir; `mascot.html` pozları, animasyonları ve konuşma balonlarını gösterir. Masaüstü penceresini Electron açar.
-
-Sunucu yalnızca `127.0.0.1` üzerinde dinler. Prompt metni, konuşma dökümünün yolu ve araç çıktıları aktarılmaz. Bununla birlikte komut metinleri, dosya yolları, arama sorguları ve bazı bildirim alanları yerel köprüden geçebilir; komut veya dosya adları konuşma balonunda görünebilir. Ekran paylaşırken buna dikkat et.
-
-Hook'lar asenkron çalışır. Maskot açık değilse köprü bağlantı hatası göstermeden çıkar.
+Tarayıcıda `http://127.0.0.1:47620/?demo` adresini aç. Sağ üstteki panelden durumları tek tek deneyebilirsin.
+Hook'lar kuruluysa Claude Code olayları tarayıcıdaki maskota da gelir. Bu modda maskot sadece sayfanın
+sol alt köşesinde durur, diğer pencerelerin üstünde durması için `npm start` gerekir.
 
 ## Kaldırma
 
@@ -79,16 +45,44 @@ Hook'lar asenkron çalışır. Maskot açık değilse köprü bağlantı hatası
 npm run kaldir
 ```
 
-Bu komut maskota ait hook kayıtlarını kaldırır ve diğer hook kayıtlarını korur. Açık maskot penceresini sağ tık menüsünden kapatabilirsin.
+Sadece maskota ait hook'lar silinir, diğer ayarlarına dokunulmaz.
 
-## Özelleştirme
+## Nasıl çalışıyor
 
-`mascot.html` içindeki `LINES` konuşma satırlarını, `POSES` ise durumlara ait poz ve aksesuarları içerir. Yerel sunucunun varsayılan portu `47620`'dir. Değiştirmek için hem maskotu hem Claude Code'u aynı `MASKOT_PORT` değeriyle başlat.
+```
+Claude Code ──hook──> hook.js ──HTTP──> server.js ──SSE──> mascot.html (Electron penceresi)
+```
 
-Node.js kurulum yolunu değiştirirsen `npm run kur` komutunu yeniden çalıştır. Claude Code ve maskotu WSL/Windows sınırının aynı tarafında çalıştırmak bağlantıyı kolaylaştırır. Linux'ta pencerenin boş alanlarından alttaki uygulamaya tıklama aktarımı desteklenmez.
+`hook.js` her olayda Claude Code'dan gelen JSON'dan sadece gereken alanları (olay adı, araç adı, komut, dosya adı)
+seçip yerel sunucuya gönderir. Prompt metni ve komut çıktıları maskota hiç gitmez.
+Hook'lar `async` çalışır, yani Claude Code'u yavaşlatmaz. Maskot kapalıysa sessizce hiçbir şey yapmaz.
+Sunucu sadece `127.0.0.1` üzerinde dinler.
 
-## Katkı Ve Lisans Notu
+`notice.js` olay akışını izleyip takılma desenlerini yakalar: aynı komutun tekrarı, üst üste hata,
+aynı dosyaya dönüp durma. Yakaladığında olaya bir not iliştirilir ve maskot kaçıncı kez olduğuna göre
+tonu değişen bir şey söyler — önce dalga geçer, sonra yumuşar, uzarsa yanında durur. Zaman ölçmez, sayar;
+pencere de susma payı da olay sayısıyla tanımlı.
 
-Proje: **[torunum](https://github.com/torunum)**.
+Eşikleri değiştirmek için `notice.js` başındaki sabitlere, replikleri değiştirmek için `mascot.html`
+içindeki `LINES.notice` tablosuna bak.
 
-Yazı tipi: **Grandstander**, **SIL Open Font License 1.1**. [Telif ve lisans bildirimi](fonts/OFL.txt) dağıtımla birlikte korunur. [Resmi kaynak](https://github.com/google/fonts/tree/main/ofl/grandstander).
+## Dosyalar
+
+`mascot.html` çizim, animasyonlar, konuşma satırları ve durum mantığı (tek dosya).
+`server.js` hook olaylarını maskot durumlarına çevirir.
+`notice.js` takılma desenlerini yakalar, `notice.test.js` onun testleri (`npm test`).
+`hook.js` Claude Code ile sunucu arasındaki köprü.
+`install.js` hook'ları ekler veya kaldırır.
+`main.js` ve `preload.js` şeffaf, her zaman üstte duran Electron penceresi.
+
+Konuşma satırlarını değiştirmek için `mascot.html` içindeki `LINES` nesnesini, durum başına poz ve aksesuarları
+değiştirmek için `POSES` nesnesini düzenle.
+
+## Notlar
+
+Portu değiştirmek istersen hem maskotu hem Claude Code'u `MASKOT_PORT` ortam değişkeniyle başlat.
+`npm run kur`, çalıştırdığın Node'un tam yolunu kaydeder. Node'u başka bir yere taşırsan (ör. nvm ile sürüm değiştirip eskisini silersen) kurulumu tekrar çalıştır.
+Claude Code'u WSL içinde, maskotu Windows'ta çalıştırıyorsan WSL'den `127.0.0.1` Windows'a ulaşmayabilir. İkisini aynı tarafta çalıştır.
+Linux'ta pencerenin boş alanları tıklamaları alttaki uygulamaya geçirmez (Electron kısıtı). Pencere küçük olduğu için genelde sorun olmaz.
+
+Font: Grandstander (SIL Open Font License), `fonts/` klasöründe.

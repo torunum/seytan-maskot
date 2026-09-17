@@ -523,6 +523,13 @@ body.demo #demo { display: block; }
     offline:    { arm: 'hip',  mouth: 'worry', brow: 'worried', look: 'center', props: ['sweat'] },
   };
 
+  // Not geldiğinde poz korunur (elindeki alet durur), yalnızca yüz ezilir.
+  const NOTICE_FACE = {
+    1: { mouth: 'grin', brow: 'mean',    look: 'left'   },  // yan gözle sırıtma
+    2: { mouth: 'hmm',  brow: 'up',      look: 'center' },  // kaş kalkık
+    3: { mouth: 'flat', brow: 'worried', look: 'center' },  // yumuşamış
+  };
+
   const LINES = {
     hello: ['Selam! Bugün neyi kırıyoruz?', 'Geldim. Kodlar titresin.', 'Oturum açıldı, dirgen hazır.'],
     back: ['Bağlantı geri geldi!'],
@@ -561,6 +568,23 @@ body.demo #demo { display: block; }
     wake: ['Uyuyordum ama!'],
     drag: ['Bırak beni!', 'Nereye götürüyorsun?'],
     quip: ['Sıkıldım…', 'Bir bug bulsak mı?', 'Dirgenimi parlatıyorum', 'Kuyruğum kaşınıyor'],
+    notice: {
+      repeat: {
+        1: ['Üçüncü kez. Ama kim sayıyor.', 'Bu komutu bir yerden hatırlıyorum…'],
+        2: ['Tamam, bu cidden inatlaşıyor.', 'Beşinci. Şeytan bile şaşırdı.'],
+        3: ['Bir mola iyi gelebilir. Ben buradayım.', 'Bazen ekrandan uzaklaşmak çözer.'],
+      },
+      failStreak: {
+        1: ['Yine mi?', 'Bu da olmadı.'],
+        2: ['Üst üste geldi bunlar.', 'Sıkıntı derinlerde galiba.'],
+        3: ['Zor gün. Bir nefes al, geçecek.', 'Pes etme ama biraz dur.'],
+      },
+      revisit: {
+        1: ['O dosyaya geri döndük.', 'Bu dosya seni bırakmıyor.'],
+        2: ['Üçüncü kez bu dosya.', 'Burada bir şey var.'],
+        3: ['Bu dosya bugünün baş belası olmuş.', 'Sen de bıktın bu dosyadan.'],
+      },
+    },
     offline: [bridge ? 'Sunucuya ulaşamıyorum. Maskotu kapatıp yeniden aç.' : 'Sunucuya ulaşamıyorum. Terminalde npm run tarayici çalıştır.'],
   };
 
@@ -589,15 +613,16 @@ body.demo #demo { display: block; }
     el.classList.add(cls);
   }
 
-  function setPose(state) {
+  function setPose(state, notice) {
     const p = POSES[state] || POSES.tool;
+    const face = notice ? NOTICE_FACE[notice.level] : null;
     svg.dataset.state = 'none';
     void svg.getBoundingClientRect(); // aynı durum tekrar gelirse animasyon baştan başlasın
     svg.dataset.state = state;
     svg.dataset.arm = p.arm;
-    svg.dataset.mouth = p.mouth;
-    svg.dataset.brow = p.brow;
-    svg.dataset.look = p.look;
+    svg.dataset.mouth = (face && face.mouth) || p.mouth;
+    svg.dataset.brow = (face && face.brow) || p.brow;
+    svg.dataset.look = (face && face.look) || p.look;
     for (const el of propEls) el.classList.toggle('on', p.props.includes(el.dataset.prop));
     restart(react, 'pop');
   }
@@ -658,13 +683,18 @@ body.demo #demo { display: block; }
     shownAt = Date.now();
     clearTimers();
     current = ev;
-    setPose(ev.state);
+    setPose(ev.state, ev.notice);
 
-    let lines;
-    if (ev.state === 'toolDone') lines = ['toolDone.' + (ev.cat || 'tool'), LINES.toolDone[ev.cat] || LINES.toolDone.tool];
+    let lines, detail = ev.detail;
+    if (ev.notice) {
+      const table = LINES.notice[ev.notice.kind];
+      lines = ['notice.' + ev.notice.kind + '.' + ev.notice.level, table[ev.notice.level]];
+      detail = ev.notice.detail;
+    }
+    else if (ev.state === 'toolDone') lines = ['toolDone.' + (ev.cat || 'tool'), LINES.toolDone[ev.cat] || LINES.toolDone.tool];
     else if (ev.state === 'error' && ev.fatal) lines = ['fatal', LINES.fatal];
     else lines = [ev.state, LINES[ev.state] || LINES.tool];
-    say(pickLine(lines[0], lines[1]), ev.detail, ev);
+    say(pickLine(lines[0], lines[1]), detail, ev);
 
     const later = (ms, fn) => { restTimer = setTimeout(() => { if (my === token) fn(); }, ms); };
     const toThinking = () => apply({ ...ev, state: 'thinking', detail: '', cat: undefined, brief: false, fatal: false });
