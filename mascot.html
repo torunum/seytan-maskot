@@ -1,0 +1,928 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Şeytan maskot</title>
+<style>
+@font-face {
+  font-family: 'Grandstander'; font-weight: 500; font-display: swap;
+  src: url(/fonts/grandstander-latin-500-normal.woff2) format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Grandstander'; font-weight: 500; font-display: swap;
+  src: url(/fonts/grandstander-latin-ext-500-normal.woff2) format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Grandstander'; font-weight: 800; font-display: swap;
+  src: url(/fonts/grandstander-latin-800-normal.woff2) format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Grandstander'; font-weight: 800; font-display: swap;
+  src: url(/fonts/grandstander-latin-ext-800-normal.woff2) format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+:root {
+  --ink: #2B0A12;
+  --skin: #E5352B;
+  --skin-dark: #A81E22;
+  --belly: #FF8A5B;
+  --bone: #FFE9BD;
+  --sulfur: #FFD23F;
+  --paper: #FFF3D6;
+  --blush: #FF5E7E;
+  --drop: #7FD6FF;
+  --smoke: #6F6269;
+}
+
+html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+body {
+  font-family: 'Grandstander', 'Comic Sans MS', system-ui, sans-serif;
+  color: var(--ink);
+  user-select: none; -webkit-user-select: none;
+}
+
+#stage { position: fixed; left: 0; bottom: 0; width: 460px; height: 320px; pointer-events: none; }
+
+/* ---------- Şeytan ---------- */
+#devil { position: absolute; left: 6px; bottom: 2px; width: 200px; height: 200px; overflow: visible; }
+#devil * { transform-box: view-box; }
+#hit { pointer-events: all; cursor: grab; fill: transparent; }
+#devil.dragging #hit { cursor: grabbing; }
+
+.f-ink { fill: var(--ink); } .f-skin { fill: var(--skin); } .f-dark { fill: var(--skin-dark); }
+.f-belly { fill: var(--belly); } .f-bone { fill: var(--bone); } .f-sulfur { fill: var(--sulfur); }
+.f-paper { fill: var(--paper); } .f-blush { fill: var(--blush); } .f-drop { fill: var(--drop); }
+.f-smoke { fill: var(--smoke); } .f-none { fill: none; }
+.s-ink { stroke: var(--ink); stroke-linejoin: round; stroke-linecap: round; }
+.s-skin { stroke: var(--skin); stroke-linecap: round; }
+.s-sulfur { stroke: var(--sulfur); stroke-linecap: round; }
+.s-paper { stroke: var(--paper); stroke-linecap: round; }
+
+#bob { animation: bob 2.6s ease-in-out infinite; }
+#squash, #react { transform-origin: 110px 206px; }
+#react.pop { animation: pop .34s cubic-bezier(.3, 1.6, .5, 1); }
+#tail { transform-origin: 132px 180px; animation: tail 1.9s ease-in-out infinite; }
+#head { transform-origin: 110px 150px; transition: transform .35s cubic-bezier(.3, 1.5, .5, 1); }
+#eyeL { transform-origin: 88px 96px; animation: blink 4.4s infinite; }
+#eyeR { transform-origin: 133px 100px; animation: blink 4.4s .07s infinite; }
+.pupil { transition: transform .25s ease; }
+#browL { transform-origin: 86px 77px; transition: transform .25s ease; }
+#browR { transform-origin: 134px 79px; transition: transform .25s ease; }
+#forkArm { transform-origin: 63px 180px; }
+#legR { transform-origin: 128px 190px; }
+#armR-wave { transform-origin: 144px 156px; animation: wave .5s ease-in-out infinite; }
+#shadow { transform-origin: 110px 207px; animation: shadow 2.6s ease-in-out infinite; }
+
+.arm, .mouth { display: none; }
+[data-arm="hip"] #armR-hip, [data-arm="chin"] #armR-chin, [data-arm="up"] #armR-up,
+[data-arm="wave"] #armR-wave { display: inline; }
+[data-mouth="grin"] #m-grin, [data-mouth="hmm"] #m-hmm, [data-mouth="o"] #m-o, [data-mouth="evil"] #m-evil,
+[data-mouth="worry"] #m-worry, [data-mouth="flat"] #m-flat { display: inline; }
+
+[data-brow="worried"] #browL { transform: translateY(-5px) rotate(-32deg); }
+[data-brow="worried"] #browR { transform: translateY(-5px) rotate(34deg); }
+[data-brow="up"] #browL { transform: translateY(-8px) rotate(-18deg); }
+[data-brow="sleepy"] #browL { transform: translateY(4px) rotate(-12deg); }
+[data-brow="sleepy"] #browR { transform: translateY(3px) rotate(12deg); }
+
+[data-look="up"] .pupil { transform: translate(-3px, -5px); }
+[data-look="hand"] .pupil { transform: translate(5px, -4px); }
+[data-look="right"] .pupil { transform: translate(5px, 1px); }
+[data-look="left"] .pupil { transform: translate(-5px, 1px); }
+[data-look="scan"] .pupil { animation: scan 1.1s ease-in-out infinite; }
+
+/* Durum hareketleri */
+[data-state="thinking"] #head { transform: rotate(-6deg); }
+[data-state="thinking"] #bob { animation-duration: 3.6s; }
+[data-state="bash"] #forkArm { animation: jab .42s ease-in-out infinite; }
+[data-state="bash"] #bob, [data-state="edit"] #bob, [data-state="search"] #bob,
+[data-state="agent"] #bob { animation: busy .46s ease-in-out infinite; }
+[data-state="done"] #squash { animation: hop .78s ease-in-out 2; }
+[data-state="done"] #forkArm, [data-state="hello"] #forkArm { animation: cheer .39s ease-in-out 4; }
+[data-state="error"] #squash { animation: shake .38s ease-in-out 2; }
+[data-state="permission"] #legR { animation: tap .3s ease-in-out infinite; }
+[data-state="permission"] #head { animation: impatient 1.2s ease-in-out infinite; }
+[data-state="compact"] #squash { animation: squeeze .8s ease-in-out infinite; }
+[data-state="sleep"] #bob, [data-state="sleep"] #shadow { animation: none; }
+[data-state="sleep"] #squash { animation: breathe 3.4s ease-in-out infinite; }
+#eyesClosed { display: none; }
+[data-state="sleep"] #eyeL, [data-state="sleep"] #eyeR { display: none; }
+[data-state="sleep"] #eyesClosed { display: inline; }
+[data-state="sleep"] #tail { animation-duration: 6s; }
+[data-state="sleep"] #head { transform: rotate(7deg); }
+
+#devil.poked #react { animation: poke .45s cubic-bezier(.3, 1.6, .5, 1); }
+#devil.poked #browL { transform: translateY(3px) rotate(14deg); }
+#devil.poked #browR { transform: translateY(3px) rotate(-14deg); }
+#devil.mad #squash { animation: shake .3s ease-in-out 3; }
+#devil.dragging #legR, #devil.dragging #legL { animation: dangle .3s ease-in-out infinite alternate; }
+#devil.dragging #legL { transform-origin: 92px 190px; }
+
+/* Aksesuarlar */
+.prop { opacity: 0; transform: scale(.3); transition: opacity .16s ease, transform .32s cubic-bezier(.3, 1.7, .5, 1); }
+.prop.on { opacity: 1; transform: scale(1); }
+.dot { transform-box: fill-box; transform-origin: center; animation: dot 1.5s ease-in-out infinite; }
+.dot:nth-child(2) { animation-delay: .2s; } .dot:nth-child(3) { animation-delay: .4s; }
+.hover-bob { animation: hoverbob 1.1s ease-in-out infinite; }
+.cursor { animation: cursor .8s steps(1) infinite; }
+.spark { transform-box: fill-box; transform-origin: center; animation: spark .42s ease-out infinite; }
+.scribble-in { transform-origin: 160px 146px; animation: scribble .22s ease-in-out infinite; }
+.lines { stroke-dasharray: 22; animation: write 1.2s linear infinite; }
+.meridian { transform-box: fill-box; transform-origin: center; animation: spin 1.4s linear infinite; }
+.imp-in { transform-box: fill-box; transform-origin: 50% 100%; animation: imp .36s ease-in-out infinite alternate; }
+.imp-in.late { animation-delay: .18s; }
+.flame { transform-box: fill-box; transform-origin: 50% 100%; animation: flicker .16s ease-in-out infinite alternate; }
+.puff { transform-box: fill-box; transform-origin: center; animation: puff 1.4s ease-out infinite; }
+.puff:nth-child(2) { animation-delay: .45s; } .puff:nth-child(3) { animation-delay: .9s; }
+.z { transform-box: fill-box; transform-origin: center; animation: zfloat 2.8s linear infinite; opacity: 0; }
+.z:nth-child(2) { animation-delay: .93s; } .z:nth-child(3) { animation-delay: 1.86s; }
+.check-in { transform-box: fill-box; transform-origin: center; animation: checkpop .5s cubic-bezier(.3, 1.8, .5, 1); }
+
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes shadow { 0%, 100% { transform: scale(1); } 50% { transform: scale(.9); } }
+@keyframes busy { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px) rotate(.6deg); } }
+@keyframes tail { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(9deg); } }
+@keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.08); } }
+@keyframes pop { 0% { transform: scale(1); } 35% { transform: scale(1.08, .9); } 65% { transform: scale(.96, 1.05); } 100% { transform: scale(1); } }
+@keyframes poke { 0% { transform: scale(1); } 30% { transform: scale(1.18, .78); } 60% { transform: scale(.9, 1.12); } 100% { transform: scale(1); } }
+@keyframes hop {
+  0%, 100% { transform: translateY(0) scale(1); }
+  14% { transform: translateY(0) scale(1.12, .86); }
+  42% { transform: translateY(-28px) scale(.92, 1.1); }
+  64% { transform: translateY(0) scale(1.14, .86); }
+  80% { transform: translateY(-5px) scale(1); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px) rotate(-3deg); }
+  40% { transform: translateX(6px) rotate(3deg); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); }
+}
+@keyframes jab { 0%, 100% { transform: translate(0, 0) rotate(0); } 45% { transform: translate(7px, -12px) rotate(5deg); } }
+@keyframes cheer { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-16px) rotate(-6deg); } }
+@keyframes tap { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-16deg); } }
+@keyframes impatient { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(4deg); } }
+@keyframes wave { 0%, 100% { transform: rotate(-12deg); } 50% { transform: rotate(16deg); } }
+@keyframes squeeze { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1, .88); } }
+@keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03, .97); } }
+@keyframes dangle { from { transform: rotate(-14deg); } to { transform: rotate(14deg); } }
+@keyframes scan { 0%, 100% { transform: translate(-5px, 1px); } 50% { transform: translate(5px, 1px); } }
+@keyframes dot { 0%, 15% { transform: scale(.3); opacity: 0; } 40%, 100% { transform: scale(1); opacity: 1; } }
+@keyframes hoverbob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes cursor { 50% { opacity: 0; } }
+@keyframes spark { 0% { transform: scale(.2); opacity: 1; } 100% { transform: scale(1.3); opacity: 0; } }
+@keyframes scribble { 0%, 100% { transform: translate(0, 0) rotate(0); } 50% { transform: translate(3px, -2px) rotate(6deg); } }
+@keyframes write { from { stroke-dashoffset: 22; } to { stroke-dashoffset: -22; } }
+@keyframes spin { 0% { transform: scaleX(1); } 50% { transform: scaleX(.15); } 100% { transform: scaleX(1); } }
+@keyframes imp { from { transform: translateY(0) scale(1.06, .94); } to { transform: translateY(-9px) scale(.96, 1.05); } }
+@keyframes flicker { from { transform: scale(1, 1); } to { transform: scale(.9, 1.22) skewX(5deg); } }
+@keyframes puff { 0% { transform: translate(0, 6px) scale(.3); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(4px, -26px) scale(1.25); opacity: 0; } }
+@keyframes zfloat { 0% { transform: translate(0, 0) scale(.6); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(18px, -40px) scale(1.25); opacity: 0; } }
+@keyframes checkpop { from { transform: scale(0) rotate(-30deg); } to { transform: scale(1) rotate(0); } }
+
+/* ---------- Konuşma balonu ---------- */
+#bubble {
+  position: absolute; left: 186px; bottom: 162px;
+  min-width: 110px; max-width: 266px; box-sizing: border-box;
+  padding: 9px 14px 10px;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 18px 18px 18px 7px;
+  box-shadow: 4px 4px 0 var(--ink);
+  transform-origin: 0 100%;
+  transform: scale(.35) rotate(-8deg);
+  opacity: 0;
+  transition: transform .3s cubic-bezier(.3, 1.7, .5, 1), opacity .14s ease;
+}
+#bubble.show { opacity: 1; transform: scale(1) rotate(-1.5deg); }
+#bubble .tail { position: absolute; left: -30px; bottom: -20px; width: 60px; height: 20px; overflow: visible; }
+#say { margin: 0; font-weight: 800; font-size: 17px; line-height: 1.22; }
+#say .rest { color: transparent; }
+#detail {
+  display: none; margin-top: 7px; max-width: 100%; box-sizing: border-box;
+  padding: 3px 8px 4px; border-radius: 6px;
+  background: var(--ink); color: var(--sulfur);
+  font: 600 12.5px/1.35 ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, Consolas, monospace;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#detail.on { display: block; }
+#foot { display: none; margin: 6px 0 0; font-weight: 500; font-size: 12px; line-height: 1.2; opacity: .66; }
+#foot.on { display: block; }
+
+/* ---------- Tarayıcı test paneli (?demo) ---------- */
+body.demo {
+  background-color: #d9d4dc;
+  background-image: linear-gradient(45deg, #c6c0ca 25%, transparent 25%), linear-gradient(-45deg, #c6c0ca 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #c6c0ca 75%), linear-gradient(-45deg, transparent 75%, #c6c0ca 75%);
+  background-size: 24px 24px; background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+}
+#demo {
+  display: none; position: fixed; top: 16px; right: 16px; width: 292px;
+  background: var(--paper); border: 3px solid var(--ink); border-radius: 12px; box-shadow: 4px 4px 0 var(--ink);
+  padding: 12px 12px 10px; font-size: 14px;
+}
+body.demo #demo { display: block; }
+#demo h1 { font-size: 17px; margin: 0 0 4px; }
+#demo p { margin: 0 0 8px; font-size: 13px; line-height: 1.35; }
+#demo button {
+  font: inherit; font-weight: 800; font-size: 13px; color: var(--ink);
+  background: #fff; border: 2px solid var(--ink); border-radius: 8px; padding: 3px 8px; margin: 0 4px 6px 0; cursor: pointer;
+}
+#demo button.main { background: var(--sulfur); }
+#demo button:hover { background: var(--bone); }
+#demo button:focus-visible { outline: 3px solid var(--skin); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  #bob, #shadow, #tail, #eyeL, #eyeR, #armR-wave, .dot, .hover-bob, .spark, .scribble-in, .lines, .meridian,
+  .imp-in, .flame, .puff, .z, [data-state] #squash, [data-state] #forkArm, [data-state] #legR, [data-state] #head,
+  [data-look="scan"] .pupil { animation: none !important; }
+  .z, .puff { opacity: 1; }
+  #bubble { transition: opacity .14s ease; }
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <svg id="devil" viewBox="0 0 220 220" data-state="idle" data-arm="hip" data-mouth="grin" data-brow="mean" data-look="center" aria-hidden="true">
+    <defs>
+      <symbol id="imp" viewBox="0 0 60 60" overflow="visible">
+        <path d="M17 22 C10 15 10 6 14 1 C16 9 22 13 27 15 Z" class="f-bone s-ink" stroke-width="3"/>
+        <path d="M43 22 C50 15 50 6 46 1 C44 9 38 13 33 15 Z" class="f-bone s-ink" stroke-width="3"/>
+        <circle cx="30" cy="36" r="20" class="f-skin s-ink" stroke-width="3.5"/>
+        <circle cx="22" cy="33" r="5" class="f-sulfur s-ink" stroke-width="2.2"/>
+        <circle cx="23" cy="34" r="2" class="f-ink"/>
+        <circle cx="38" cy="34" r="3.8" class="f-sulfur s-ink" stroke-width="2.2"/>
+        <circle cx="38.5" cy="35" r="1.6" class="f-ink"/>
+        <path d="M20 43 Q30 53 41 42 Q30 47 20 43 Z" class="f-ink s-ink" stroke-width="2"/>
+      </symbol>
+      <clipPath id="evilClip"><path d="M80 118 L144 115 Q112 166 80 118 Z"/></clipPath>
+    </defs>
+
+    <ellipse id="shadow" cx="110" cy="207" rx="50" ry="7" class="f-ink" opacity=".2"/>
+
+    <!-- iş bitince ayak dibinde alevler -->
+    <g class="prop" data-prop="fire" style="transform-origin:110px 206px">
+      <g transform="translate(52 208)"><g class="flame">
+        <path d="M-12 0 C-17 -12 -8 -19 -6 -32 C-1 -21 5 -24 3 -38 C15 -25 18 -9 12 0 Z" class="f-sulfur s-ink" stroke-width="3"/>
+        <path d="M-5 0 C-8 -7 -3 -11 -2 -18 C1 -12 5 -12 4 -20 C10 -12 10 -5 7 0 Z" class="f-skin"/>
+      </g></g>
+      <g transform="translate(172 209) scale(.8)"><g class="flame" style="animation-delay:.08s">
+        <path d="M-12 0 C-17 -12 -8 -19 -6 -32 C-1 -21 5 -24 3 -38 C15 -25 18 -9 12 0 Z" class="f-sulfur s-ink" stroke-width="3.5"/>
+        <path d="M-5 0 C-8 -7 -3 -11 -2 -18 C1 -12 5 -12 4 -20 C10 -12 10 -5 7 0 Z" class="f-skin"/>
+      </g></g>
+    </g>
+
+    <g id="bob"><g id="squash"><g id="react">
+
+      <!-- kuyruk -->
+      <g id="tail">
+        <path d="M132 182 C160 196 190 190 191 168" class="f-none s-ink" stroke-width="12"/>
+        <path d="M132 182 C160 196 190 190 191 168" class="f-none s-skin" stroke-width="5.5"/>
+        <path d="M191 146 L204 167 L191 162 L178 167 Z" class="f-skin s-ink" stroke-width="4"/>
+      </g>
+
+      <!-- ayaklar -->
+      <g id="legL"><ellipse cx="92" cy="197" rx="14" ry="9" class="f-dark s-ink" stroke-width="4"/></g>
+      <g id="legR"><ellipse cx="128" cy="197" rx="14" ry="9" class="f-dark s-ink" stroke-width="4"/></g>
+
+      <!-- gövde -->
+      <ellipse cx="110" cy="164" rx="38" ry="32" class="f-skin s-ink" stroke-width="4.5"/>
+      <ellipse cx="110" cy="173" rx="22" ry="16" class="f-belly"/>
+
+      <!-- dirgenli kol -->
+      <g id="forkArm">
+        <path d="M60 112 V204" class="f-none s-ink" stroke-width="6"/>
+        <path d="M47 96 V112 Q47 124 60 124 Q73 124 73 112 V96 M60 90 V124" class="f-none s-ink" stroke-width="5"/>
+        <path d="M80 156 Q63 162 63 178" class="f-none s-ink" stroke-width="13"/>
+        <path d="M80 156 Q63 162 63 178" class="f-none s-skin" stroke-width="6.5"/>
+        <circle cx="62" cy="180" r="7.5" class="f-skin s-ink" stroke-width="4"/>
+      </g>
+
+      <!-- kafa -->
+      <g id="head">
+        <path d="M72 72 C56 60 50 40 58 24 C64 42 78 52 92 56 Z" class="f-bone s-ink" stroke-width="4.5"/>
+        <path d="M148 72 C164 60 172 44 167 29 C158 45 144 52 128 56 Z" class="f-bone s-ink" stroke-width="4.5"/>
+        <path d="M102 55 C96 43 106 38 108 27 C114 38 124 43 118 55 Z" class="f-dark s-ink" stroke-width="4"/>
+        <ellipse cx="110" cy="100" rx="57" ry="50" class="f-skin s-ink" stroke-width="5"/>
+        <ellipse cx="70" cy="121" rx="9" ry="5" class="f-blush" opacity=".6"/>
+        <ellipse cx="152" cy="119" rx="8" ry="5" class="f-blush" opacity=".6"/>
+
+        <g id="eyeL">
+          <ellipse cx="88" cy="96" rx="17" ry="19" class="f-sulfur s-ink" stroke-width="4"/>
+          <g class="pupil"><circle cx="89" cy="98" r="7.5" class="f-ink"/><circle cx="92" cy="94" r="2.6" class="f-paper"/></g>
+        </g>
+        <g id="eyeR">
+          <ellipse cx="133" cy="100" rx="12" ry="13" class="f-sulfur s-ink" stroke-width="4"/>
+          <g class="pupil"><circle cx="134" cy="101" r="5" class="f-ink"/><circle cx="136" cy="98.5" r="1.8" class="f-paper"/></g>
+        </g>
+        <g id="eyesClosed">
+          <path d="M72 97 Q88 109 104 97" class="f-none s-ink" stroke-width="5"/>
+          <path d="M122 101 Q133 109 144 101" class="f-none s-ink" stroke-width="5"/>
+        </g>
+        <path id="browL" d="M68 72 L104 82" class="f-none s-ink" stroke-width="7"/>
+        <path id="browR" d="M120 84 L148 74" class="f-none s-ink" stroke-width="7"/>
+
+        <g id="m-grin" class="mouth">
+          <path d="M84 122 Q111 152 140 120 Q112 131 84 122 Z" class="f-ink s-ink" stroke-width="3"/>
+          <path d="M112 126.4 L117.5 137.5 L123 125.4 Z" class="f-bone"/>
+          <path d="M94 124.8 L97.5 131.5 L101 125.4 Z" class="f-bone"/>
+        </g>
+        <path id="m-hmm" class="mouth f-none s-ink" d="M100 133 q6 -6 12 0 t12 -1" stroke-width="5"/>
+        <ellipse id="m-o" class="mouth f-ink" cx="113" cy="131" rx="7" ry="9"/>
+        <g id="m-evil" class="mouth">
+          <path d="M80 118 L144 115 Q112 166 80 118 Z" class="f-ink"/>
+          <ellipse cx="113" cy="143" rx="15" ry="9" class="f-blush" clip-path="url(#evilClip)"/>
+          <path d="M80 118 L144 115 Q112 166 80 118 Z" class="f-none s-ink" stroke-width="3"/>
+          <path d="M89 118.6 L95.5 131 L102 118.3 Z" class="f-bone"/>
+          <path d="M122 117.4 L128.5 129.5 L135 117 Z" class="f-bone"/>
+        </g>
+        <path id="m-worry" class="mouth f-none s-ink" d="M92 133 q5 -6 10 0 t10 0 t10 0" stroke-width="4.5"/>
+        <path id="m-flat" class="mouth f-none s-ink" d="M100 131 Q112 135 124 130" stroke-width="4.5"/>
+
+        <g class="prop" data-prop="sweat" style="transform-origin:57px 78px">
+          <path d="M57 62 Q67 77 57 86 Q47 77 57 62 Z" class="f-drop s-ink" stroke-width="3"/>
+        </g>
+      </g>
+
+      <!-- sağ kol pozları -->
+      <g id="armR-hip" class="arm">
+        <path d="M144 156 Q162 166 152 180" class="f-none s-ink" stroke-width="13"/>
+        <path d="M144 156 Q162 166 152 180" class="f-none s-skin" stroke-width="6.5"/>
+        <circle cx="151" cy="181" r="7.5" class="f-skin s-ink" stroke-width="4"/>
+      </g>
+      <g id="armR-chin" class="arm">
+        <path d="M144 160 Q164 152 138 141" class="f-none s-ink" stroke-width="13"/>
+        <path d="M144 160 Q164 152 138 141" class="f-none s-skin" stroke-width="6.5"/>
+        <circle cx="135" cy="140" r="8" class="f-skin s-ink" stroke-width="4"/>
+      </g>
+      <g id="armR-up" class="arm">
+        <path d="M144 156 Q166 154 167 137" class="f-none s-ink" stroke-width="13"/>
+        <path d="M144 156 Q166 154 167 137" class="f-none s-skin" stroke-width="6.5"/>
+        <circle cx="167" cy="134" r="7.5" class="f-skin s-ink" stroke-width="4"/>
+      </g>
+      <g id="armR-wave" class="arm">
+        <path d="M144 156 Q166 154 167 137" class="f-none s-ink" stroke-width="13"/>
+        <path d="M144 156 Q166 154 167 137" class="f-none s-skin" stroke-width="6.5"/>
+        <circle cx="167" cy="133" r="8.5" class="f-skin s-ink" stroke-width="4"/>
+      </g>
+
+      <!-- düşünce baloncukları -->
+      <g class="prop" data-prop="think" style="transform-origin:44px 56px">
+        <circle class="dot f-paper s-ink" cx="44" cy="54" r="4" stroke-width="3"/>
+        <circle class="dot f-paper s-ink" cx="30" cy="37" r="6.5" stroke-width="3"/>
+        <circle class="dot f-paper s-ink" cx="15" cy="15" r="10" stroke-width="3"/>
+      </g>
+
+      <!-- terminal (komut) -->
+      <g class="prop" data-prop="term" style="transform-origin:168px 132px">
+        <g class="hover-bob">
+          <rect x="162" y="80" width="52" height="36" rx="7" class="f-ink s-ink" stroke-width="3"/>
+          <path d="M171 91 L178 98 L171 105" class="f-none s-sulfur" stroke-width="3.5"/>
+          <rect class="cursor f-sulfur" x="182" y="102" width="12" height="4" rx="1"/>
+          <path class="spark f-sulfur s-ink" stroke-width="2" d="M180 124 l3 -7 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 Z"/>
+        </g>
+      </g>
+
+      <!-- kalem ve kağıt (düzenleme) -->
+      <g class="prop" data-prop="pencil" style="transform-origin:168px 132px">
+        <g class="hover-bob">
+          <rect x="170" y="84" width="36" height="44" rx="3" class="f-paper s-ink" stroke-width="3.5"/>
+          <path class="lines f-none s-ink" d="M177 96 h22 M177 105 h18 M177 114 h22" stroke-width="2.5"/>
+        </g>
+        <g class="scribble-in">
+          <path d="M156 150 L181 119" class="f-none s-ink" stroke-width="11"/>
+          <path d="M158 147.5 L179 121.5" class="f-none s-sulfur" stroke-width="5"/>
+          <path d="M184 114 L178 125 L187 120 Z" class="f-ink s-ink" stroke-width="3"/>
+        </g>
+      </g>
+
+      <!-- büyüteç (okuma, arama) -->
+      <g class="prop" data-prop="mag" style="transform-origin:168px 132px">
+        <path d="M167 131 L173 116" class="f-none s-ink" stroke-width="7"/>
+        <circle cx="178" cy="102" r="15" class="s-ink" fill="rgba(127,214,255,.4)" stroke-width="5"/>
+        <path d="M169 97 q3 -6 10 -7" class="f-none s-paper" stroke-width="3"/>
+      </g>
+
+      <!-- dünya (web) -->
+      <g class="prop" data-prop="globe" style="transform-origin:168px 132px">
+        <g class="hover-bob">
+          <circle cx="178" cy="103" r="16" class="f-drop s-ink" stroke-width="4"/>
+          <ellipse class="meridian f-none s-ink" cx="178" cy="103" rx="7" ry="16" stroke-width="2.5"/>
+          <path d="M162 103 H194" class="f-none s-ink" stroke-width="2.5"/>
+        </g>
+      </g>
+
+      <!-- liste (yapılacaklar) -->
+      <g class="prop" data-prop="list" style="transform-origin:168px 132px">
+        <g class="hover-bob">
+          <rect x="168" y="80" width="36" height="46" rx="3" class="f-paper s-ink" stroke-width="3.5"/>
+          <path d="M174 92 l3 3 l5 -6 M174 104 l3 3 l5 -6" class="f-none s-ink" stroke-width="2.5"/>
+          <path d="M186 92 h12 M186 104 h12 M186 116 h12" class="f-none s-ink" stroke-width="2.5"/>
+          <rect x="174" y="112" width="7" height="7" rx="1.5" class="f-none s-ink" stroke-width="2.2"/>
+        </g>
+      </g>
+
+      <!-- fiş (bağlantı / başka araç) -->
+      <g class="prop" data-prop="plug" style="transform-origin:168px 132px">
+        <path d="M167 130 Q164 116 176 112" class="f-none s-ink" stroke-width="4"/>
+        <g class="hover-bob">
+          <rect x="172" y="96" width="24" height="18" rx="5" class="f-bone s-ink" stroke-width="3.5"/>
+          <path d="M178 96 V86 M190 96 V86" class="f-none s-ink" stroke-width="4"/>
+          <path class="spark f-sulfur s-ink" stroke-width="2" d="M184 70 l2.5 -6 l2.5 6 l6 2.5 l-6 2.5 l-2.5 6 l-2.5 -6 l-6 -2.5 Z"/>
+        </g>
+      </g>
+
+      <!-- minyonlar (alt ajan) -->
+      <g class="prop" data-prop="imps" style="transform-origin:110px 150px">
+        <g class="imp-in"><use href="#imp" x="0" y="150" width="44" height="44"/></g>
+        <g class="imp-in late"><use href="#imp" x="160" y="80" width="40" height="40"/></g>
+      </g>
+
+      <!-- onay işareti -->
+      <g class="prop" data-prop="check" style="transform-origin:180px 104px">
+        <g class="check-in">
+          <circle cx="180" cy="104" r="14" class="f-sulfur s-ink" stroke-width="4"/>
+          <path d="M173 104 l5 5 l9 -10" class="f-none s-ink" stroke-width="4"/>
+        </g>
+      </g>
+
+      <!-- kafadan duman (hata) -->
+      <g class="prop" data-prop="smoke" style="transform-origin:110px 40px">
+        <circle class="puff f-smoke s-ink" cx="92" cy="36" r="10" stroke-width="3"/>
+        <circle class="puff f-smoke s-ink" cx="112" cy="24" r="13" stroke-width="3"/>
+        <circle class="puff f-smoke s-ink" cx="130" cy="36" r="9" stroke-width="3"/>
+      </g>
+
+      <!-- uyku -->
+      <g class="prop" data-prop="zzz" style="transform-origin:160px 60px">
+        <text class="z f-paper s-ink" x="156" y="60" font-size="22" font-weight="800" stroke-width="5" paint-order="stroke">z</text>
+        <text class="z f-paper s-ink" x="156" y="60" font-size="27" font-weight="800" stroke-width="5" paint-order="stroke">z</text>
+        <text class="z f-paper s-ink" x="156" y="60" font-size="32" font-weight="800" stroke-width="5" paint-order="stroke">Z</text>
+      </g>
+
+    </g></g></g>
+
+    <ellipse id="hit" cx="110" cy="128" rx="66" ry="84"/>
+  </svg>
+
+  <div id="bubble" role="status" aria-live="polite">
+    <svg class="tail" viewBox="0 0 60 20" aria-hidden="true">
+      <path d="M36 0 L2 18 L54 0" style="fill:var(--paper);stroke:var(--ink);stroke-width:3;stroke-linejoin:round"/>
+    </svg>
+    <p id="say"></p>
+    <code id="detail"></code>
+    <p id="foot"></p>
+  </div>
+</div>
+
+<div id="demo">
+  <h1>Maskot test paneli</h1>
+  <p>Claude Code olmadan durumları dene. Maskot sol altta.</p>
+  <div id="demo-buttons"></div>
+</div>
+
+<script>
+(() => {
+  const svg = document.getElementById('devil');
+  const react = document.getElementById('react');
+  const hit = document.getElementById('hit');
+  const bubble = document.getElementById('bubble');
+  const sayEl = document.getElementById('say');
+  const detailEl = document.getElementById('detail');
+  const footEl = document.getElementById('foot');
+  const propEls = [...svg.querySelectorAll('.prop')];
+  const bridge = window.maskot || null;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const POSES = {
+    idle:       { arm: 'hip',  mouth: 'grin',  brow: 'mean',    look: 'center', props: [] },
+    hello:      { arm: 'wave', mouth: 'evil',  brow: 'mean',    look: 'right',  props: [] },
+    back:       { arm: 'wave', mouth: 'evil',  brow: 'mean',    look: 'center', props: [] },
+    thinking:   { arm: 'chin', mouth: 'hmm',   brow: 'up',      look: 'up',     props: ['think'] },
+    bash:       { arm: 'up',   mouth: 'grin',  brow: 'mean',    look: 'hand',   props: ['term'] },
+    edit:       { arm: 'up',   mouth: 'grin',  brow: 'mean',    look: 'hand',   props: ['pencil'] },
+    read:       { arm: 'up',   mouth: 'o',     brow: 'up',      look: 'scan',   props: ['mag'] },
+    search:     { arm: 'up',   mouth: 'hmm',   brow: 'mean',    look: 'scan',   props: ['mag'] },
+    web:        { arm: 'up',   mouth: 'grin',  brow: 'up',      look: 'hand',   props: ['globe'] },
+    agent:      { arm: 'up',   mouth: 'evil',  brow: 'mean',    look: 'hand',   props: ['imps'] },
+    subDone:    { arm: 'hip',  mouth: 'grin',  brow: 'mean',    look: 'right',  props: ['check'] },
+    todo:       { arm: 'up',   mouth: 'hmm',   brow: 'mean',    look: 'hand',   props: ['list'] },
+    mcp:        { arm: 'up',   mouth: 'grin',  brow: 'up',      look: 'hand',   props: ['plug'] },
+    tool:       { arm: 'up',   mouth: 'grin',  brow: 'mean',    look: 'hand',   props: ['plug'] },
+    toolDone:   { arm: 'hip',  mouth: 'grin',  brow: 'mean',    look: 'right',  props: ['check'] },
+    error:      { arm: 'hip',  mouth: 'worry', brow: 'worried', look: 'center', props: ['smoke', 'sweat'] },
+    permission: { arm: 'hip',  mouth: 'worry', brow: 'worried', look: 'center', props: ['sweat'] },
+    waiting:    { arm: 'chin', mouth: 'flat',  brow: 'mean',    look: 'center', props: [] },
+    done:       { arm: 'wave', mouth: 'evil',  brow: 'mean',    look: 'center', props: ['fire'] },
+    partDone:   { arm: 'wave', mouth: 'grin',  brow: 'mean',    look: 'right',  props: ['check'] },
+    compact:    { arm: 'hip',  mouth: 'worry', brow: 'worried', look: 'up',     props: ['sweat'] },
+    bye:        { arm: 'wave', mouth: 'grin',  brow: 'up',      look: 'center', props: [] },
+    sleep:      { arm: 'hip',  mouth: 'flat',  brow: 'sleepy',  look: 'center', props: ['zzz'] },
+    offline:    { arm: 'hip',  mouth: 'worry', brow: 'worried', look: 'center', props: ['sweat'] },
+  };
+
+  const LINES = {
+    hello: ['Selam! Bugün neyi kırıyoruz?', 'Geldim. Kodlar titresin.', 'Oturum açıldı, dirgen hazır.'],
+    back: ['Bağlantı geri geldi!'],
+    thinking: ['Düşünüyorum…', 'Şeytani bir plan kuruyorum…', 'Hmm, bir saniye…', 'Kafamda çarklar dönüyor…'],
+    bash: ['Komut çalıştırıyorum', 'Terminale dirgen batırıyorum', 'Komutu fırlattım, bakalım…'],
+    edit: ['Dosyayı kurcalıyorum', 'Koda şeytani bir dokunuş', 'Satırları yeniden yazıyorum'],
+    read: ['Dosya okuyorum', 'Satır satır inceliyorum', 'Bakalım burada ne saklamışlar'],
+    search: ['Arıyorum…', 'Kodu didik didik ediyorum', 'İz sürüyorum'],
+    web: ['İnternette dolaşıyorum', 'Web’e daldım, hemen dönerim'],
+    agent: ['Yardımcı şeytan çağırdım', 'Minyonlarımı işe saldım'],
+    subDone: ['Minyonum işini bitirdi', 'Yardımcı şeytan rapor verdi'],
+    todo: ['Yapılacaklar listesini güncelliyorum', 'Liste yapıyorum, kimse kaçamaz'],
+    mcp: ['Bağlantı kullanıyorum', 'Dış dünyayla pazarlık ediyorum'],
+    tool: ['Bir alet kullanıyorum'],
+    toolDone: {
+      bash: ['Komutu çalıştırdım', 'Komut bitti, sıradaki'],
+      edit: ['Dosyayı düzenledim', 'Değişiklik yerinde'],
+      read: ['Okudum', 'Tamam, okudum'],
+      search: ['Aradım, bir şeyler buldum'],
+      web: ['Web’den döndüm'],
+      agent: ['Minyon raporunu verdi'],
+      todo: ['Liste güncellendi'],
+      mcp: ['Bağlantı cevap verdi'],
+      tool: ['Tamamdır'],
+    },
+    error: ['Ups… bir şey patladı', 'Bu olmadı, başka yol deneyeceğim', 'Hata! Ama pes etmek yok'],
+    fatal: ['API tarafında sorun var, tur yarıda kaldı'],
+    permission: ['İznini bekliyorum!', 'Hadi, onayla şunu', 'Bir tık uzağındayım… onay?'],
+    waiting: ['Sıra sende', 'Buradayım, biraz sıkıldım', 'Bir şey yazacak mısın?'],
+    done: ['Bitti! Hehehe', 'İş tamam. Kötülük başarıyla uygulandı', 'Hallettim, alkış bekliyorum'],
+    partDone: ['Bir oturum bitti, diğerleri hâlâ çalışıyor'],
+    compact: ['Hafızamı sıkıştırıyorum…', 'Yer açıyorum, eski anılar gidiyor'],
+    bye: ['Görüşürüz!', 'Kaçtım ben'],
+    poke: ['Ay! Ne dürtüyorsun?', 'Dirgenimi görüyor musun?', 'Gıdıklanıyorum!', 'Çalışıyorum burada!'],
+    pokeMad: ['Yeter! Kodunu silerim… şaka şaka'],
+    wake: ['Uyuyordum ama!'],
+    drag: ['Bırak beni!', 'Nereye götürüyorsun?'],
+    quip: ['Sıkıldım…', 'Bir bug bulsak mı?', 'Dirgenimi parlatıyorum', 'Kuyruğum kaşınıyor'],
+    offline: [bridge ? 'Sunucuya ulaşamıyorum. Maskotu kapatıp yeniden aç.' : 'Sunucuya ulaşamıyorum. Terminalde npm run tarayici çalıştır.'],
+  };
+
+  const BUSY = new Set(['thinking', 'bash', 'edit', 'read', 'search', 'web', 'agent', 'todo', 'mcp', 'tool', 'permission', 'compact']);
+  const MIN_SHOW = 1100;
+
+  let current = { state: 'idle' };
+  let token = 0;
+  let shownAt = 0;
+  let pending = null, pendingTimer = null;
+  let typeTimer = null, hideTimer = null, restTimer = null, sleepTimer = null, quipTimer = null;
+  let lastSaid = null;
+  const lastPick = {};
+
+  function pickLine(key, arr) {
+    if (arr.length === 1) return arr[0];
+    let line;
+    do { line = arr[Math.floor(Math.random() * arr.length)]; } while (line === lastPick[key]);
+    lastPick[key] = line;
+    return line;
+  }
+
+  function restart(el, cls) {
+    el.classList.remove(cls);
+    void el.getBoundingClientRect();
+    el.classList.add(cls);
+  }
+
+  function setPose(state) {
+    const p = POSES[state] || POSES.tool;
+    svg.dataset.state = 'none';
+    void svg.getBoundingClientRect(); // aynı durum tekrar gelirse animasyon baştan başlasın
+    svg.dataset.state = state;
+    svg.dataset.arm = p.arm;
+    svg.dataset.mouth = p.mouth;
+    svg.dataset.brow = p.brow;
+    svg.dataset.look = p.look;
+    for (const el of propEls) el.classList.toggle('on', p.props.includes(el.dataset.prop));
+    restart(react, 'pop');
+  }
+
+  // ---------- Balon ----------
+  function say(text, detail = '', meta = {}, instant = false) {
+    lastSaid = { text, detail, meta };
+    clearTimeout(hideTimer);
+    clearInterval(typeTimer);
+
+    const chars = [...text];
+    const shown = document.createElement('span');
+    const rest = document.createElement('span');
+    rest.className = 'rest';
+    rest.textContent = text;
+    sayEl.replaceChildren(shown, rest);
+
+    if (instant || reduced) {
+      shown.textContent = text;
+      rest.textContent = '';
+    } else {
+      let i = 0;
+      typeTimer = setInterval(() => {
+        i += 1;
+        shown.textContent = chars.slice(0, i).join('');
+        rest.textContent = chars.slice(i).join('');
+        if (i >= chars.length) clearInterval(typeTimer);
+      }, 24);
+    }
+
+    detailEl.textContent = detail || '';
+    detailEl.classList.toggle('on', !!detail);
+    detailEl.title = detail || '';
+
+    const footParts = [];
+    if (meta.project) footParts.push(meta.project);
+    if (meta.busy > 1) footParts.push(`${meta.busy} oturum çalışıyor`);
+    footEl.textContent = footParts.join(', ');
+    footEl.classList.toggle('on', footParts.length > 0);
+
+    if (!bubble.classList.contains('show')) bubble.classList.add('show');
+    else if (!instant) restart(bubble, 'show');
+  }
+
+  function hideBubble() {
+    clearInterval(typeTimer);
+    bubble.classList.remove('show');
+  }
+
+  // ---------- Durum akışı ----------
+  function clearTimers() {
+    clearTimeout(restTimer); clearTimeout(sleepTimer); clearTimeout(quipTimer); clearTimeout(hideTimer);
+  }
+
+  function apply(ev) {
+    token += 1;
+    const my = token;
+    shownAt = Date.now();
+    clearTimers();
+    current = ev;
+    setPose(ev.state);
+
+    let lines;
+    if (ev.state === 'toolDone') lines = ['toolDone.' + (ev.cat || 'tool'), LINES.toolDone[ev.cat] || LINES.toolDone.tool];
+    else if (ev.state === 'error' && ev.fatal) lines = ['fatal', LINES.fatal];
+    else lines = [ev.state, LINES[ev.state] || LINES.tool];
+    say(pickLine(lines[0], lines[1]), ev.detail, ev);
+
+    const later = (ms, fn) => { restTimer = setTimeout(() => { if (my === token) fn(); }, ms); };
+    const toThinking = () => apply({ ...ev, state: 'thinking', detail: '', cat: undefined, brief: false, fatal: false });
+
+    if (ev.state === 'toolDone' || ev.state === 'subDone' || ev.brief) later(1500, toThinking);
+    else if (ev.state === 'error' && !ev.fatal) later(2600, toThinking);
+    else if (ev.state === 'error') later(7000, goIdle);
+    else if (ev.state === 'done') later(6500, goIdle);
+    else if (ev.state === 'partDone' || ev.state === 'back') later(3500, goIdle);
+    else if (ev.state === 'hello') later(4200, goIdle);
+    else if (ev.state === 'bye') later(3200, goIdle);
+    else if (ev.state === 'waiting') later(9000, () => { hideBubble(); scheduleSleep(110000); });
+  }
+
+  function goIdle() {
+    token += 1;
+    clearTimers();
+    current = { state: 'idle' };
+    setPose('idle');
+    hideBubble();
+    scheduleSleep(75000);
+    scheduleQuip();
+  }
+
+  function scheduleSleep(ms) {
+    const my = token;
+    clearTimeout(sleepTimer);
+    sleepTimer = setTimeout(() => {
+      if (my !== token) return;
+      token += 1;
+      clearTimers();
+      current = { state: 'sleep' };
+      setPose('sleep');
+      hideBubble();
+    }, ms);
+  }
+
+  function scheduleQuip() {
+    const my = token;
+    clearTimeout(quipTimer);
+    quipTimer = setTimeout(() => {
+      if (my !== token || current.state !== 'idle') return;
+      if (Math.random() < 0.55) {
+        say(pickLine('quip', LINES.quip));
+        hideTimer = setTimeout(() => { if (my === token) hideBubble(); }, 3200);
+      }
+      scheduleQuip();
+    }, 26000 + Math.random() * 26000);
+  }
+
+  // Hızlı gelen olaylarda titremesin: her durum en az MIN_SHOW kadar görünür.
+  // Acil olanlar (izin, hata, bitti) hemen gösterilir.
+  function receive(ev) {
+    if (ev.urgent) {
+      clearTimeout(pendingTimer); pendingTimer = null; pending = null;
+      apply(ev);
+      return;
+    }
+    pending = ev;
+    const wait = MIN_SHOW - (Date.now() - shownAt);
+    if (wait <= 0) flush();
+    else if (!pendingTimer) pendingTimer = setTimeout(flush, wait);
+  }
+
+  function flush() {
+    pendingTimer = null;
+    if (!pending) return;
+    const ev = pending;
+    pending = null;
+    apply(ev);
+  }
+
+  // ---------- Sunucu bağlantısı ----------
+  function connect() {
+    const es = new EventSource('/events');
+    let offlineTimer = null;
+
+    es.onmessage = (m) => {
+      let ev;
+      try { ev = JSON.parse(m.data); } catch { return; }
+      if (ev.replay) {
+        const age = Date.now() - ev.t;
+        if (age > 10 * 60 * 1000) return;
+        if (age > 20000 && !BUSY.has(ev.state)) return;
+        ev.urgent = true;
+      }
+      receive(ev);
+    };
+
+    es.onopen = () => {
+      clearTimeout(offlineTimer);
+      offlineTimer = null;
+      if (current.state === 'offline') apply({ state: 'back', urgent: true });
+    };
+
+    es.onerror = () => {
+      if (offlineTimer || current.state === 'offline') return;
+      offlineTimer = setTimeout(() => {
+        offlineTimer = null;
+        if (es.readyState !== EventSource.OPEN) apply({ state: 'offline' });
+      }, 4000);
+    };
+  }
+
+  // ---------- Dürtme ve sürükleme ----------
+  let pokeCount = 0, pokeResetTimer = null, pokeEndTimer = null;
+
+  function poke() {
+    if (current.state === 'sleep') {
+      goIdle();
+      svg.classList.add('poked');
+      say(LINES.wake[0]);
+      hideTimer = setTimeout(hideBubble, 2200);
+      pokeEndTimer = setTimeout(() => svg.classList.remove('poked'), 900);
+      return;
+    }
+    pokeCount += 1;
+    clearTimeout(pokeResetTimer);
+    pokeResetTimer = setTimeout(() => { pokeCount = 0; }, 2500);
+    const mad = pokeCount >= 4;
+    if (mad) pokeCount = 0;
+
+    svg.classList.remove('poked', 'mad');
+    void svg.getBoundingClientRect();
+    svg.classList.add('poked');
+    if (mad) svg.classList.add('mad');
+    svg.dataset.mouth = 'o';
+
+    const resume = lastSaid && current.state !== 'idle' ? lastSaid : null;
+    clearTimeout(hideTimer);
+    say(mad ? pickLine('pokeMad', LINES.pokeMad) : pickLine('poke', LINES.poke));
+
+    clearTimeout(pokeEndTimer);
+    pokeEndTimer = setTimeout(() => {
+      svg.classList.remove('poked', 'mad');
+      svg.dataset.mouth = (POSES[current.state] || POSES.idle).mouth;
+      if (resume) say(resume.text, resume.detail, resume.meta, true);
+      else hideBubble();
+    }, 1700);
+  }
+
+  let clickable = false;
+  let drag = null;
+
+  function setClickable(on) {
+    if (on === clickable) return;
+    clickable = on;
+    if (bridge) bridge.setClickable(on);
+  }
+
+  window.addEventListener('mousemove', (e) => setClickable(!!drag || e.target === hit));
+  document.addEventListener('mouseleave', () => { if (!drag) setClickable(false); });
+
+  hit.addEventListener('pointerdown', async (e) => {
+    if (e.button !== 0) return;
+    hit.setPointerCapture(e.pointerId);
+    drag = { sx: e.screenX, sy: e.screenY, wx: 0, wy: 0, moved: false, ready: !bridge };
+    if (bridge) {
+      const d = drag;
+      const [wx, wy] = await bridge.getPos();
+      d.wx = wx; d.wy = wy; d.ready = true;
+    }
+  });
+
+  hit.addEventListener('pointermove', (e) => {
+    if (!drag || !drag.ready || !bridge) return;
+    const dx = e.screenX - drag.sx;
+    const dy = e.screenY - drag.sy;
+    if (!drag.moved && Math.hypot(dx, dy) > 5) {
+      drag.moved = true;
+      svg.classList.add('dragging');
+      svg.dataset.mouth = 'o';
+      say(pickLine('drag', LINES.drag));
+    }
+    if (drag.moved) bridge.move(drag.wx + dx, drag.wy + dy);
+  });
+
+  hit.addEventListener('pointerup', () => {
+    if (!drag) return;
+    const d = drag;
+    drag = null;
+    if (d.moved) {
+      svg.classList.remove('dragging');
+      bridge.moved();
+      svg.dataset.mouth = (POSES[current.state] || POSES.idle).mouth;
+      if (current.state === 'idle' || current.state === 'sleep') hideTimer = setTimeout(hideBubble, 1200);
+      else if (lastSaid) say(lastSaid.text, lastSaid.detail, lastSaid.meta, true);
+    } else {
+      poke();
+    }
+  });
+
+  hit.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    if (bridge) bridge.menu();
+  });
+
+  // ---------- Test gösterisi ----------
+  const TOUR = [
+    { state: 'hello' },
+    { state: 'thinking' },
+    { state: 'read', detail: 'server.js' },
+    { state: 'toolDone', cat: 'read', detail: 'server.js' },
+    { state: 'search', detail: 'TODO' },
+    { state: 'edit', detail: 'mascot.html' },
+    { state: 'toolDone', cat: 'edit', detail: 'mascot.html' },
+    { state: 'bash', detail: 'npm test' },
+    { state: 'error', detail: 'npm test' },
+    { state: 'web', detail: 'code.claude.com' },
+    { state: 'agent', detail: 'qa-uzmani' },
+    { state: 'subDone', detail: 'qa-uzmani' },
+    { state: 'todo' },
+    { state: 'mcp', detail: 'github / list_issues' },
+    { state: 'permission', detail: 'Bash' },
+    { state: 'bash', detail: 'git push origin main' },
+    { state: 'toolDone', cat: 'bash', detail: 'git push origin main' },
+    { state: 'compact' },
+    { state: 'done' },
+  ];
+  let touring = false;
+
+  async function runTour() {
+    if (touring) return;
+    touring = true;
+    for (const step of TOUR) {
+      receive({ ...step, urgent: true, project: 'demo-proje', busy: 1 });
+      await new Promise((r) => setTimeout(r, 2300));
+    }
+    touring = false;
+  }
+
+  if (bridge) bridge.onTour(runTour);
+
+  if (new URLSearchParams(location.search).has('demo')) {
+    document.body.classList.add('demo');
+    const box = document.getElementById('demo-buttons');
+    const add = (label, fn, main) => {
+      const b = document.createElement('button');
+      b.textContent = label;
+      if (main) b.className = 'main';
+      b.addEventListener('click', fn);
+      box.appendChild(b);
+    };
+    add('Gösteriyi oynat', runTour, true);
+    const samples = {
+      hello: '', thinking: '', bash: 'npm run build', edit: 'app.js', read: 'README.md', search: 'useState',
+      web: 'developer.mozilla.org', agent: 'arastirmaci', todo: '', mcp: 'gmail / create_draft',
+      toolDone: 'npm run build', error: 'npm test', permission: 'Bash', waiting: '', done: '', compact: '', bye: '',
+    };
+    for (const [state, detail] of Object.entries(samples)) {
+      add(state, () => receive({ state, detail, cat: state === 'toolDone' ? 'bash' : undefined, urgent: true, project: 'demo-proje', busy: 1 }));
+    }
+    add('uyu', () => { goIdle(); scheduleSleep(10); });
+  }
+
+  goIdle();
+  connect();
+})();
+</script>
+</body>
+</html>

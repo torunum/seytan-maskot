@@ -1,0 +1,16 @@
+{
+  "name": "seytan-maskot",
+  "version": "1.0.0",
+  "description": "Claude Code'a bağlı, sol alt köşede duran komik şeytan maskot",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "kur": "node install.js",
+    "kaldir": "node install.js --kaldir",
+    "tarayici": "node server.js"
+  },
+  "devDependencies": {
+    "electron": "^44.3.0"
+  }
+}
